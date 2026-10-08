@@ -162,10 +162,22 @@ git push
 
 第一次推送会弹窗让你登录 Gitee/GitHub 账号。
 
-> ⚠️ **推送前务必注意：** `backend/src/main/resources/application.yml` 和 `application-dev.yml`
-> 里写着**数据库密码、JWT 密钥、邮箱授权码**。
-> 如果推到**公开仓库**，全世界都能看到。
-> 真要公开的话，请打开 `.gitignore` 最后那两行的注释，把这两个文件排除掉。
+> ✅ **密码问题已经解决了，公开仓库也能推。**
+>
+> 数据库密码、Redis 密码、邮箱授权码、JWT 密钥、Druid 控制台密码，
+> 已经全部挪到 `backend/src/main/resources/application-local.yml`，
+> 而该文件被 `.gitignore` 排除，**永远不会上传**。
+>
+> 仓库里只留了一份模板：
+> `backend/src/main/resources/application-local.yml.example`（全是占位符）。
+>
+> **换电脑后怎么恢复？** 把模板复制一份改个名，填上自己的密码即可：
+>
+> ```powershell
+> cd 基于SpringBoot的校园管理系统设计\backend\src\main\resources
+> Copy-Item application-local.yml.example application-local.yml
+> # 然后用记事本打开 application-local.yml 填密码
+> ```
 
 ---
 
@@ -182,8 +194,18 @@ git push
 | `.idea/` | IDEA 的**你这台电脑**的配置，别人不需要 |
 | `logs/`、`*.log` | 运行日志，天天变，提交它没意义 |
 | `upload/` | 用户上传的文件，属于运行数据 |
+| `application-local.yml` | **本地私密配置**：数据库密码、邮箱授权码、JWT 密钥。只有你本机有 |
 
-**所以最终只有 152 个文件、0.6 MB 真正进仓库**，全是源代码、文档和原型。
+**所以最终只有 154 个文件、0.6 MB 真正进仓库**，全是源代码、文档和原型。
+
+> 💡 注意区分这两个文件：
+>
+> | 文件 | 是否上传 | 内容 |
+> |---|---|---|
+> | `application-local.yml` | ❌ 不上传 | 你的**真实密码** |
+> | `application-local.yml.example` | ✅ 上传 | 只有**占位符**的模板 |
+>
+> 改密码时请只改前者。**千万别把真密码写进 `.example` 文件里。**
 
 ---
 
