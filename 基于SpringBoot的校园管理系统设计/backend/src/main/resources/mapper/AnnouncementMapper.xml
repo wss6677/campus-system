@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ivy.campus.mapper.AnnouncementMapper">
+
+    <resultMap id="AnnouncementResultMap" type="com.ivy.campus.entity.Announcement">
+        <id column="id" property="id"/>
+        <result column="title" property="title"/>
+        <result column="subtitle" property="subtitle"/>
+        <result column="summary" property="summary"/>
+        <result column="content" property="content"/>
+        <result column="cover_image" property="coverImage"/>
+        <result column="category_id" property="categoryId"/>
+        <result column="author_id" property="authorId"/>
+        <result column="dept_id" property="deptId"/>
+        <result column="campus" property="campus"/>
+        <result column="status" property="status"/>
+        <result column="visibility" property="visibility"/>
+        <result column="priority" property="priority"/>
+        <result column="is_top" property="isTop"/>
+        <result column="is_banner" property="isBanner"/>
+        <result column="is_red_head" property="isRedHead"/>
+        <result column="allow_comment" property="allowComment"/>
+        <result column="need_receipt" property="needReceipt"/>
+        <result column="publish_time" property="publishTime"/>
+        <result column="expire_time" property="expireTime"/>
+        <result column="audit_user_id" property="auditUserId"/>
+        <result column="audit_time" property="auditTime"/>
+        <result column="audit_remark" property="auditRemark"/>
+        <result column="view_count" property="viewCount"/>
+        <result column="receipt_count" property="receiptCount"/>
+        <result column="target_count" property="targetCount"/>
+        <result column="version" property="version"/>
+        <result column="keywords" property="keywords"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+        <result column="category_name" property="categoryName"/>
+        <result column="author_name" property="authorName"/>
+        <result column="dept_name" property="deptName"/>
+        <result column="comment_count" property="commentCount"/>
+    </resultMap>
+
+    <sql id="BaseColumns">
+        a.id, a.title, a.subtitle, a.summary, a.content, a.cover_image, a.category_id, a.author_id, a.dept_id,
+        a.campus, a.status, a.visibility, a.priority, a.is_top, a.is_banner, a.is_red_head, a.allow_comment,
+        a.need_receipt, a.publish_time, a.expire_time, a.audit_user_id, a.audit_time, a.audit_remark,
+        a.view_count, a.receipt_count, a.target_count, a.version, a.keywords, a.create_by, a.create_time,
+        a.update_time, a.deleted
+    </sql>
+
+    <sql id="JoinColumns">
+        c.name as category_name, u.real_name as author_name, d.name as dept_name,
+        (select count(1) from ann_comment cm
+            where cm.announcement_id = a.id and cm.deleted = 0 and cm.status = 'APPROVED') as comment_count
+    </sql>
+
+    <sql id="JoinTables">
+        from ann_announcement a
+        left join ann_category c on c.id = a.category_id
+        left join sys_user u on u.id = a.author_id
+        left join sys_dept d on d.id = a.dept_id
+    </sql>
+
+    <!-- 公告分页查询：支持关键词/分类/状态/可见范围/优先级/校区/学院/作者/置顶/时间区间 -->
+    <select id="selectAnnouncementPage" resultMap="AnnouncementResultMap">
+        select
+        <include refid="BaseColumns"/>,
+        <include refid="JoinColumns"/>
+        <include refid="JoinTables"/>
+        <where>
+            a.deleted = 0
+            <if test="q != null">
+                <if test="q.keyword != null and q.keyword != ''">
+                    and (a.title like concat('%', #{q.keyword}, '%')
+                    or a.summary like concat('%', #{q.keyword}, '%')
+                    or a.content like concat('%', #{q.keyword}, '%'))
+                </if>
+                <if test="q.categoryId != null">
+                    and a.category_id = #{q.categoryId}
+                </if>
+                <if test="q.status != null and q.status != ''">
+                    and a.status = #{q.status}
+                </if>
+                <if test="q.visibility != null and q.visibility != ''">
+                    and a.visibility = #{q.visibility}
+                </if>
+                <if test="q.priority != null and q.priority != ''">
+                    and a.priority = #{q.priority}
+                </if>
+                <if test="q.campus != null and q.campus != ''">
+                    and a.campus = #{q.campus}
+                </if>
+                <if test="q.deptId != null">
+                    and a.dept_id = #{q.deptId}
+                </if>
+                <if test="q.authorId != null">
+                    and a.author_id = #{q.authorId}
+                </if>
+                <if test="q.onlyTop != null and q.onlyTop == 1">
+                    and a.is_top = 1
+                </if>
+                <if test="q.startTime != null">
+                    and a.create_time &gt;= #{q.startTime}
+                </if>
+                <if test="q.endTime != null">
+                    and a.create_time &lt;= #{q.endTime}
+                </if>
+            </if>
+        </where>
+        order by a.is_top desc, a.priority desc, a.publish_time desc, a.id desc
+    </select>
+
+    <!-- 分类发布量统计（近 days 天） -->
+    <select id="selectCategoryStats" resultType="com.ivy.campus.vo.CategoryStatVO">
+        select c.name as name, c.code as code, c.color as color, count(a.id) as value
+        from ann_category c
+        left join ann_announcement a on a.category_id = c.id
+        and a.deleted = 0
+        and a.status = 'PUBLISHED'
+        <if test="days != null and days > 0">
+            and a.publish_time &gt;= date_sub(curdate(), interval #{days} day)
+        </if>
+        where c.deleted = 0
+        group by c.id, c.name, c.code, c.color, c.sort
+        order by c.sort asc, value desc
+    </select>
+
+    <!-- 发布趋势：近 days 天每日总量、发布量、已读率 -->
+    <select id="selectPublishTrend" resultType="com.ivy.campus.vo.TrendVO">
+        select
+            date_format(a.create_time, '%Y-%m-%d') as date,
+            count(a.id) as count,
+            sum(case when a.status = 'PUBLISHED' then 1 else 0 end) as publishCount,
+            ifnull(round(
+                sum((select count(1) from ann_receipt r where r.announcement_id = a.id and r.read_flag = 1))
+                / nullif(sum((select count(1) from ann_receipt r2 where r2.announcement_id = a.id)), 0) * 100
+            , 2), 0) as readRate
+        from ann_announcement a
+        where a.deleted = 0
+        <if test="days != null and days > 0">
+            and a.create_time &gt;= date_sub(curdate(), interval #{days} day)
+        </if>
+        group by date_format(a.create_time, '%Y-%m-%d')
+        order by date asc
+    </select>
+
+    <!-- 浏览量 Top N -->
+    <select id="selectTopViewed" resultMap="AnnouncementResultMap">
+        select
+        <include refid="BaseColumns"/>,
+        <include refid="JoinColumns"/>
+        <include refid="JoinTables"/>
+        where a.deleted = 0 and a.status = 'PUBLISHED'
+        order by a.view_count desc, a.id desc
+        <if test="limit != null and limit > 0">
+            limit #{limit}
+        </if>
+    </select>
+
+    <!-- 按状态统计公告总数 -->
+    <select id="countByStatus" resultType="java.lang.Long">
+        select count(1)
+        from ann_announcement a
+        where a.deleted = 0
+        <if test="status != null and status != ''">
+            and a.status = #{status}
+        </if>
+    </select>
+
+    <!-- 待审核公告列表 -->
+    <select id="selectPendingList" resultMap="AnnouncementResultMap">
+        select
+        <include refid="BaseColumns"/>,
+        <include refid="JoinColumns"/>
+        <include refid="JoinTables"/>
+        where a.deleted = 0 and a.status = 'PENDING'
+        order by a.priority desc, a.create_time asc, a.id asc
+    </select>
+
+    <!-- 到点待发布公告列表 -->
+    <select id="selectPublishableList" resultMap="AnnouncementResultMap">
+        select
+        <include refid="BaseColumns"/>,
+        <include refid="JoinColumns"/>
+        <include refid="JoinTables"/>
+        where a.deleted = 0 and a.status = 'SCHEDULED' and a.publish_time &lt;= now()
+        order by a.publish_time asc, a.id asc
+    </select>
+
+</mapper>

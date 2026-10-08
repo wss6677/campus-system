@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ivy.campus.mapper.OperationLogMapper">
+
+    <resultMap id="OperationLogResultMap" type="com.ivy.campus.entity.OperationLog">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="username" property="username"/>
+        <result column="module" property="module"/>
+        <result column="operation" property="operation"/>
+        <result column="method" property="method"/>
+        <result column="params" property="params"/>
+        <result column="ip" property="ip"/>
+        <result column="location" property="location"/>
+        <result column="cost_time" property="costTime"/>
+        <result column="status" property="status"/>
+        <result column="error_msg" property="errorMsg"/>
+        <result column="create_time" property="createTime"/>
+    </resultMap>
+
+    <!-- 操作日志分页查询 -->
+    <select id="selectLogPage" resultMap="OperationLogResultMap">
+        select
+            l.id, l.user_id, l.username, l.module, l.operation, l.method, l.params, l.ip, l.location,
+            l.cost_time, l.status, l.error_msg, l.create_time
+        from sys_operation_log l
+        <where>
+            <if test="q != null">
+                <if test="q.username != null and q.username != ''">
+                    and l.username like concat('%', #{q.username}, '%')
+                </if>
+                <if test="q.module != null and q.module != ''">
+                    and l.module = #{q.module}
+                </if>
+                <if test="q.operation != null and q.operation != ''">
+                    and l.operation like concat('%', #{q.operation}, '%')
+                </if>
+                <if test="q.status != null">
+                    and l.status = #{q.status}
+                </if>
+                <if test="q.startTime != null">
+                    and l.create_time &gt;= #{q.startTime}
+                </if>
+                <if test="q.endTime != null">
+                    and l.create_time &lt;= #{q.endTime}
+                </if>
+            </if>
+        </where>
+        order by l.create_time desc, l.id desc
+    </select>
+
+</mapper>

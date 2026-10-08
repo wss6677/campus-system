@@ -1,0 +1,71 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/campus_announcement?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
+    username: root
+    password: 123456
+    druid:
+      initial-size: 2
+      min-idle: 2
+      max-active: 10
+      max-wait: 30000
+      validation-query: SELECT 1
+      test-while-idle: true
+      filters: stat
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        login-username: admin
+        login-password: admin
+  data:
+    redis:
+      host: localhost
+      port: 6379
+      database: 1
+      password:
+      timeout: 5000ms
+  mail:
+    host: smtp.qq.com
+    port: 465
+    username: campus@qq.com
+    password: campus-authorize-code
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          auth: true
+          ssl:
+            enable: true
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+
+knife4j:
+  enable: true
+  production: false
+  setting:
+    language: zh_cn
+
+campus:
+  upload:
+    # 相对路径按「启动时的工作目录」解析；需要固定位置时改成绝对路径，如 D:/campus-upload/
+    path: ./upload/
+    url-prefix: /upload/
+  jwt:
+    secret: campus-announcement-jwt-secret-key-2024-ivy-0123456789abcdef
+    expire: 86400
+
+logging:
+  level:
+    root: info
+    com.ivy.campus: debug
+    com.ivy.campus.mapper: debug
+  file:
+    name: ./logs/campus-announcement-dev.log

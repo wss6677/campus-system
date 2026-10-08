@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ivy.campus.mapper.ReceiptMapper">
+
+    <!-- 按学院统计某公告的接收与未读情况 -->
+    <select id="selectUnreadRank" resultType="com.ivy.campus.vo.DeptUnreadVO">
+        select
+            d.id as deptId,
+            d.name as deptName,
+            count(r.id) as total,
+            ifnull(sum(case when r.read_flag = 0 then 1 else 0 end), 0) as unread,
+            ifnull(round(sum(case when r.read_flag = 0 then 1 else 0 end) / nullif(count(r.id), 0) * 100, 2), 0) as rate
+        from ann_receipt r
+        left join sys_dept d on d.id = r.dept_id
+        where r.announcement_id = #{announcementId}
+        group by r.dept_id, d.id, d.name
+        order by unread desc, total desc
+    </select>
+
+    <!-- 单公告未读数 -->
+    <select id="countUnreadByAnnouncement" resultType="java.lang.Long">
+        select ifnull(count(1), 0)
+        from ann_receipt r
+        where r.announcement_id = #{announcementId}
+        and r.read_flag = 0
+    </select>
+
+</mapper>
