@@ -14,6 +14,15 @@ spring:
     name: campus-announcement
   profiles:
     active: dev
+  # ------------------------------------------------------------
+  #  私密配置（数据库密码 / Redis 密码 / 邮箱授权码 / JWT 密钥 /
+  #  Druid 控制台密码）全部写在 application-local.yml 里。
+  #  该文件已被 .gitignore 排除，不会上传到 GitHub。
+  #  换电脑时请复制 application-local.yml.example 并填入自己的值。
+  #  前缀 optional: 表示该文件不存在时也不报错。
+  # ------------------------------------------------------------
+  config:
+    import: optional:classpath:application-local.yml
   main:
     allow-circular-references: true
   jackson:
@@ -34,8 +43,7 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/campus_announcement?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&rewriteBatchedStatements=true
-    username: root
-    password: 123456
+    # username / password 见 application-local.yml
     druid:
       initial-size: 5
       min-idle: 5
@@ -54,8 +62,7 @@ spring:
       stat-view-servlet:
         enabled: true
         url-pattern: /druid/*
-        login-username: admin
-        login-password: admin
+        # login-username / login-password 见 application-local.yml
         reset-enable: false
       web-stat-filter:
         enabled: true
@@ -66,7 +73,7 @@ spring:
       host: localhost
       port: 6379
       database: 1
-      password:
+      # password 见 application-local.yml
       timeout: 5000ms
       lettuce:
         pool:
@@ -77,8 +84,7 @@ spring:
   mail:
     host: smtp.qq.com
     port: 465
-    username: campus@qq.com
-    password: campus-authorize-code
+    # username / password 见 application-local.yml
     default-encoding: UTF-8
     properties:
       mail:
@@ -135,7 +141,7 @@ campus:
     path: ./upload/
     url-prefix: /upload/
   jwt:
-    secret: campus-announcement-jwt-secret-key-2024-ivy-0123456789abcdef
+    # secret 见 application-local.yml
     expire: 86400
 
 logging:

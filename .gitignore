@@ -40,13 +40,7 @@ Thumbs.db
 Desktop.ini
 .DS_Store
 
-# ============================================================
-#  安全提醒
-#  下面这两个文件里写着数据库密码、JWT 密钥、邮箱授权码。
-#  只在自己电脑上做备份 → 保持现在这样（会被提交，能被备份到，很好）。
-#  如果哪天要推到 GitHub 公开仓库 → 请把下面两行的 # 去掉，
-#  再复制一份 application-dev.yml 改名为 application-local.yml 放本地用。
-# ------------------------------------------------------------
-# backend/src/main/resources/application.yml
-# backend/src/main/resources/application-dev.yml
-# ============================================================
+# ---------- 本地私密配置（数据库密码 / 邮箱授权码 / JWT 密钥）----------
+# 仓库里只保留 application-local.yml.example 这个模板；
+# 真正的 application-local.yml 只存在于你本机，永远不会被提交。
+application-local.yml

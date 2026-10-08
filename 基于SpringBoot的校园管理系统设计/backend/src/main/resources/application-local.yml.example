@@ -1,0 +1,41 @@
+# ============================================================
+#  本地私密配置模板  application-local.yml.example
+#
+#  用法：把本文件复制一份，改名为 application-local.yml，
+#        然后把你自己的真实密码填进去。
+#
+#    PowerShell:  Copy-Item application-local.yml.example application-local.yml
+#    CMD:         copy application-local.yml.example application-local.yml
+#
+#  注意：application-local.yml 已被 .gitignore 排除，不会被提交；
+#        而本文件（.example）会被提交，所以**只能写占位符，绝不能写真实密码**。
+# ============================================================
+
+spring:
+  # ---------- MySQL 账号密码 ----------
+  datasource:
+    username: root
+    password: "你的数据库密码"
+
+    # ---------- Druid 监控页面登录账号（http://localhost:8080/druid/）----------
+    druid:
+      stat-view-servlet:
+        login-username: admin
+        login-password: "改成一个只有你知道的密码"
+
+  # ---------- Redis 密码（本机没设密码就留空）----------
+  data:
+    redis:
+      password:
+
+  # ---------- 发件邮箱（QQ 邮箱要填「授权码」，不是 QQ 登录密码）----------
+  mail:
+    username: 你的QQ号@qq.com
+    password: "你的邮箱授权码"
+
+# ---------- JWT 签名密钥 ----------
+# 随便一串够长的随机字符即可，例如用 PowerShell 生成：
+#   -join ((1..48) | ForEach-Object { '{0:x}' -f (Get-Random -Max 16) })
+campus:
+  jwt:
+    secret: "换成你自己的随机密钥，至少 32 位"
