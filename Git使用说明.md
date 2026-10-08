@@ -181,6 +181,32 @@ git push
 
 ---
 
+### 4. 连不上 GitHub？配置代理（重要）
+
+如果你开了 Clash Verge / v2ray 之类的代理软件，会遇到这个坑：
+
+> **Git 默认不走 Windows 系统代理**，会报
+> `Connection was reset` 或 `Failed to connect to github.com:443 after 21056 ms`
+
+（表现形式很迷惑：浏览器能打开 GitHub、`ping` 也通，但 `git push` 就是失败。）
+
+先查代理软件监听的端口（Clash Verge 新版是 `7897`，老版本是 `7890`），然后：
+
+```powershell
+git config --global http.https://github.com.proxy http://127.0.0.1:7897
+```
+
+> 注意写的是 `http.https://github.com.proxy`，不是全局的 `http.proxy`。
+> 这样**只有 GitHub 走代理**，以后推 Gitee 等国内仓库仍然直连，不会变慢。
+
+**关掉代理软件后一定要撤销**，否则 git 连 GitHub 会失败：
+
+```powershell
+git config --global --unset http.https://github.com.proxy
+```
+
+---
+
 ## 七、这个仓库的规矩（.gitignore）
 
 `.gitignore` 文件决定了「哪些东西不进版本管理」。本项目已经排除了：
